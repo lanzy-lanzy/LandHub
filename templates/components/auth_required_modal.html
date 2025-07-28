@@ -1,0 +1,208 @@
+<!-- Authentication Required Modal -->
+<div id="auth-required-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Background overlay -->
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeAuthModal()"></div>
+
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 modal-enter">
+            <div>
+                <!-- Icon -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-100">
+                    <svg class="h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                
+                <!-- Content -->
+                <div class="mt-3 text-center sm:mt-5">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                        Sign In Required
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                            To view full property details and access all features, please sign in to your account or create a new one.
+                        </p>
+                    </div>
+                    
+                    <!-- Benefits list -->
+                    <div class="mt-4 text-left">
+                        <h4 class="text-sm font-medium text-gray-900 mb-2">With an account, you can:</h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                View detailed property information
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Save properties to your favorites
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Contact property owners directly
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Set up saved searches and alerts
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Access your personalized dashboard
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                <a href="#" id="signin-btn" 
+                   class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:col-start-2 sm:text-sm transition-colors duration-200">
+                    Sign In
+                </a>
+                <a href="#" id="signup-btn"
+                   class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm transition-colors duration-200">
+                    Sign Up
+                </a>
+            </div>
+            
+            <!-- Close button -->
+            <div class="absolute top-0 right-0 pt-4 pr-4">
+                <button type="button" 
+                        class="bg-white rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        onclick="closeAuthModal()">
+                    <span class="sr-only">Close</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Continue browsing link -->
+            <div class="mt-4 text-center">
+                <button type="button" 
+                        class="text-sm text-gray-500 hover:text-gray-700 underline"
+                        onclick="closeAuthModal()">
+                    Continue browsing without signing in
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal animations */
+.modal-enter {
+    animation: modalEnter 0.3s ease-out;
+}
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+.modal-exit {
+    animation: modalExit 0.2s ease-in;
+}
+
+@keyframes modalExit {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0) scale(0.95);
+    }
+}
+
+/* Ensure modal appears above everything */
+#auth-required-modal {
+    z-index: 9999;
+}
+</style>
+
+<script>
+// Modal functionality
+function showAuthModal(propertyId) {
+    const modal = document.getElementById('auth-required-modal');
+    const signinBtn = document.getElementById('signin-btn');
+    const signupBtn = document.getElementById('signup-btn');
+
+    // Set up redirect URLs with the property ID as next parameter
+    const propertyUrl = `/buyer/property/${propertyId}/`;
+    const loginUrl = '{% url "login" %}';
+    const registerUrl = '{% url "register" %}';
+    const signinUrl = `${loginUrl}?next=${encodeURIComponent(propertyUrl)}`;
+    const signupUrl = `${registerUrl}?role=buyer&next=${encodeURIComponent(propertyUrl)}`;
+
+    signinBtn.href = signinUrl;
+    signupBtn.href = signupUrl;
+
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    // Focus management for accessibility
+    modal.focus();
+}
+
+function closeAuthModal() {
+    const modal = document.getElementById('auth-required-modal');
+    const modalPanel = modal.querySelector('.modal-enter');
+    
+    // Add exit animation
+    modalPanel.classList.remove('modal-enter');
+    modalPanel.classList.add('modal-exit');
+    
+    // Hide modal after animation
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore scrolling
+        modalPanel.classList.remove('modal-exit');
+        modalPanel.classList.add('modal-enter');
+    }, 200);
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('auth-required-modal');
+        if (!modal.classList.contains('hidden')) {
+            closeAuthModal();
+        }
+    }
+});
+
+// Prevent modal from closing when clicking inside the modal content
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('auth-required-modal');
+    if (modal) {
+        const modalContent = modal.querySelector('.inline-block');
+        if (modalContent) {
+            modalContent.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        }
+    }
+});
+</script>

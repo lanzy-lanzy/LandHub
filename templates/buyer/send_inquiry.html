@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block title %}Send Inquiry - {{ property.title }} - LandHub{% endblock %}
+{% block meta_description %}Send an inquiry about {{ property.title }} on LandHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .property-preview {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-2">
+                        <a href="{% url 'buyer_property_detail' property.id %}" class="hover:text-gray-700">{{ property.title }}</a>
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span class="text-gray-900">Send Inquiry</span>
+                    </nav>
+                    <h1 class="text-2xl font-bold text-gray-900">Send Inquiry</h1>
+                    <p class="mt-1 text-sm text-gray-600">Contact the seller about this property</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'buyer_property_detail' property.id %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Property
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Property Preview -->
+        <div class="property-preview rounded-xl p-6 mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                    {% if property.images.all %}
+                        <img src="{{ property.images.first.image.url }}" alt="{{ property.title }}" 
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ property.title }}</h3>
+                    <p class="text-sm text-gray-600">{{ property.location }}</p>
+                    <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                        <span class="font-medium text-primary-600">${{ property.price|floatformat:0 }}</span>
+                        <span>•</span>
+                        <span>{{ property.size_acres }} acres</span>
+                        <span>•</span>
+                        <span>{{ property.get_property_type_display }}</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Listed by</div>
+                    <div class="font-medium text-gray-900">{{ property.owner.get_full_name|default:property.owner.username }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inquiry Form -->
+        <div class="admin-card rounded-xl shadow-sm p-8">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Inquiry</h2>
+                    <p class="text-sm text-gray-600 mb-6">
+                        Send a message to the seller about this property. Be specific about your interest and any questions you have.
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.subject.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.message.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</div>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-gray-500">
+                                Include details about your interest, timeline, financing, and any specific questions about the property.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Contact Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium text-gray-700">Name:</span>
+                            <span class="text-gray-900">{{ user.get_full_name|default:user.username }}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">Email:</span>
+                            <span class="text-gray-900">{{ user.email }}</span>
+                        </div>
+                        {% if user.profile.phone %}
+                            <div>
+                                <span class="font-medium text-gray-700">Phone:</span>
+                                <span class="text-gray-900">{{ user.profile.phone }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">
+                        This information will be shared with the seller so they can respond to your inquiry.
+                        <a href="{% url 'buyer_profile' %}" class="text-primary-600 hover:text-primary-500">Update your profile</a> to ensure your contact information is current.
+                    </p>
+                </div>
+
+                <!-- Important Notes -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <h4 class="text-sm font-medium text-blue-800 mb-1">Before You Send</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Be professional and courteous in your message</li>
+                                <li>• Include specific questions about the property</li>
+                                <li>• Mention your timeline and financing status if relevant</li>
+                                <li>• You can only send one inquiry per property per 24 hours</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'buyer_property_detail' property.id %}" 
+                       class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200">
+                        Cancel
+                    </a>
+                    
+                    <button type="submit" 
+                            class="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200">
+                        Send Inquiry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

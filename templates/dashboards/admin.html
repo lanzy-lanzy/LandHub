@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - LandHub{% endblock %}
+{% block meta_description %}LandHub Admin Dashboard - Manage users, listings, and platform analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom admin dashboard styles */
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .metric-card {
+        transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .chart-bar {
+        transition: all 0.3s ease;
+    }
+
+    .chart-bar:hover {
+        opacity: 0.8;
+        transform: scaleY(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Dashboard Content - No additional wrapper needed -->
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen" x-data="adminDashboard()">
+    <!-- Dashboard Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                    <p class="mt-1 text-sm text-gray-600">Welcome back, {{ user.get_full_name|default:user.username }}. Here's what's happening on LandHub today.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- Refresh Button -->
+                    <button @click="refreshData()"
+                            :disabled="loading"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh
+                    </button>
+                    <!-- Quick Actions Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open"
+                                class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 shadow-sm">
+                            Quick Actions
+                            <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             @click.away="open = false"
+                             class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                            <div class="py-1">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">Create Admin User</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">Export Data</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">System Settings</a>
+                                <div class="border-t border-gray-100"></div>
+                                <a href="#" class="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors duration-150">Maintenance Mode</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Key Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Users Card -->
+            <div class="admin-card metric-card rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <div class="flex items-baseline">
+                            <p class="text-2xl font-bold text-gray-900">{{ total_users|default:0 }}</p>
+                            <p class="ml-2 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+12%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>Buyers: {{ buyer_count|default:0 }}</span>
+                        <span>Sellers: {{ seller_count|default:0 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Listings Card -->
+            <div class="admin-card metric-card rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600">Pending Listings</p>
+                        <div class="flex items-baseline">
+                            <p class="text-2xl font-bold text-gray-900">{{ pending_listings|default:0 }}</p>
+                            {% if pending_listings > 0 %}
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Needs Review
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <a href="{% url 'admin_listing_management' %}?status=pending" class="text-sm font-medium text-primary-600 hover:text-primary-500 transition-colors duration-150">Review pending →</a>
+                </div>
+            </div>
+
+            <!-- Total Listings Card -->
+            <div class="admin-card metric-card rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600">Total Listings</p>
+                        <div class="flex items-baseline">
+                            <p class="text-2xl font-bold text-gray-900">{{ total_listings|default:0 }}</p>
+                            <p class="ml-2 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+8%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>Active: {{ approved_listings|default:0 }}</span>
+                        <span>Draft: {{ draft_listings|default:0 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Inquiries Card -->
+            <div class="admin-card metric-card rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-600">Total Inquiries</p>
+                        <div class="flex items-baseline">
+                            <p class="text-2xl font-bold text-gray-900">{{ total_inquiries|default:0 }}</p>
+                            <p class="ml-2 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+15%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <span>This month: {{ monthly_inquiries|default:0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Analytics Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- User Growth Chart -->
+            <div class="admin-card rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">User Growth</h3>
+                    <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                        <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-white transition-all duration-150">7D</button>
+                        <button class="text-sm text-white bg-primary-600 px-3 py-1 rounded-md shadow-sm">30D</button>
+                        <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-white transition-all duration-150">90D</button>
+                    </div>
+                </div>
+                <div class="h-64 flex items-end justify-between space-x-2">
+                    <!-- Enhanced Bar Chart -->
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg shadow-sm" style="height: 40%"></div>
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg shadow-sm" style="height: 60%"></div>
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-600 to-primary-500 rounded-t-lg shadow-sm" style="height: 80%"></div>
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg shadow-sm" style="height: 70%"></div>
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-600 to-primary-500 rounded-t-lg shadow-sm" style="height: 90%"></div>
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-700 to-primary-600 rounded-t-lg shadow-sm" style="height: 100%"></div>
+                    <div class="chart-bar flex-1 bg-gradient-to-t from-primary-600 to-primary-500 rounded-t-lg shadow-sm" style="height: 85%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-4 px-1">
+                    <span>Week 1</span>
+                    <span>Week 2</span>
+                    <span>Week 3</span>
+                    <span>Week 4</span>
+                </div>
+            </div>
+
+            <!-- Property Types Distribution -->
+            <div class="admin-card rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Property Types Distribution</h3>
+                <div class="space-y-5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mr-3 shadow-sm"></div>
+                            <span class="text-sm font-medium text-gray-700">Residential</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-3 mr-3 overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 shadow-sm" style="width: 45%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">45%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full mr-3 shadow-sm"></div>
+                            <span class="text-sm font-medium text-gray-700">Agricultural</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-3 mr-3 overflow-hidden">
+                                <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500 shadow-sm" style="width: 30%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">30%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full mr-3 shadow-sm"></div>
+                            <span class="text-sm font-medium text-gray-700">Commercial</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-3 mr-3 overflow-hidden">
+                                <div class="bg-gradient-to-r from-purple-500 to-indigo-600 h-3 rounded-full transition-all duration-500 shadow-sm" style="width: 15%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">15%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mr-3 shadow-sm"></div>
+                            <span class="text-sm font-medium text-gray-700">Recreational</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-3 mr-3 overflow-hidden">
+                                <div class="bg-gradient-to-r from-orange-500 to-red-500 h-3 rounded-full transition-all duration-500 shadow-sm" style="width: 10%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900 min-w-[3rem] text-right">10%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity and Management Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Recent Activity Feed -->
+            <div class="lg:col-span-2 admin-card rounded-xl shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                        <button onclick="window.location.reload()"
+                                class="text-sm text-primary-600 hover:text-primary-500 font-medium bg-primary-50 px-3 py-1 rounded-lg hover:bg-primary-100 transition-all duration-150">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="activity-feed" class="space-y-4">
+                        <!-- Static Activity Items -->
+                        <div class="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">New user registered</p>
+                                <p class="text-sm text-gray-500">John Smith joined as a buyer and completed profile setup</p>
+                                <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3 p-4 bg-green-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Listing approved</p>
+                                <p class="text-sm text-gray-500">50-acre agricultural property in Texas has been approved and published</p>
+                                <p class="text-xs text-gray-400 mt-1">4 hours ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3 p-4 bg-yellow-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Listing requires review</p>
+                                <p class="text-sm text-gray-500">Commercial property listing needs additional documentation</p>
+                                <p class="text-xs text-gray-400 mt-1">6 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">
+                                    <span class="font-medium">John Doe</span> created a new listing
+                                    <span class="font-medium">"Beautiful Farmland in Texas"</span>
+                                </p>
+                                <p class="text-xs text-gray-500">2 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">
+                                    <span class="font-medium">Jane Smith</span> registered as a new buyer
+                                </p>
+                                <p class="text-xs text-gray-500">5 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">
+                                    New inquiry received for <span class="font-medium">"Commercial Plot Downtown"</span>
+                                </p>
+                                <p class="text-xs text-gray-500">10 minutes ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Management Panel -->
+            <div class="space-y-6">
+                <!-- Pending Listings Management -->
+                <div class="admin-card rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Pending Reviews</h3>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm">
+                            {{ pending_listings|default:0 }}
+                        </span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for listing in recent_pending_listings %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" id="listing-{{ listing.id }}">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ listing.title }}</p>
+                                    <p class="text-xs text-gray-500">by {{ listing.owner.username }}</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button hx-post="/admin/api/approve-listing/{{ listing.id }}/"
+                                            hx-target="#listing-{{ listing.id }}"
+                                            hx-swap="outerHTML"
+                                            class="text-green-600 hover:text-green-700">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <button hx-post="/admin/api/reject-listing/{{ listing.id }}/"
+                                            hx-target="#listing-{{ listing.id }}"
+                                            hx-swap="outerHTML"
+                                            class="text-red-600 hover:text-red-700">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-4">
+                                <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="text-sm text-gray-500 mt-2">No pending listings</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-4">
+                        <a href="#" class="text-sm font-medium text-primary-600 hover:text-primary-500">View all pending →</a>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="admin-card rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Database</span>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                <span class="text-sm font-bold text-green-700">Healthy</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Storage</span>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                <span class="text-sm font-bold text-green-700">85% Free</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Email Service</span>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                <span class="text-sm font-bold text-green-700">Online</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Backup</span>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+                                <span class="text-sm font-bold text-yellow-700">2h ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="admin-card rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Today's Summary</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">New Users</span>
+                            <span class="text-lg font-bold text-blue-700">{{ daily_new_users|default:0 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">New Listings</span>
+                            <span class="text-lg font-bold text-green-700">{{ daily_new_listings|default:0 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Inquiries</span>
+                            <span class="text-lg font-bold text-purple-700">{{ daily_inquiries|default:0 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Page Views</span>
+                            <span class="text-lg font-bold text-orange-700">{{ daily_page_views|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function adminDashboard() {
+    return {
+        loading: false,
+
+        refreshData() {
+            this.loading = true;
+
+            // Refresh all dashboard data via HTMX
+            htmx.trigger('#activity-feed', 'refresh');
+
+            setTimeout(() => {
+                this.loading = false;
+                // Show success message
+                this.showNotification('Dashboard data refreshed successfully', 'success');
+            }, 1000);
+        },
+
+        showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    }
+}
+</script>
+{% endblock %}

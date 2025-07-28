@@ -1,0 +1,12 @@
+<!-- Rejected Listing Component -->
+<div class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200" id="listing-{{ listing.id }}">
+    <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-red-900 truncate">{{ listing.title }}</p>
+        <p class="text-xs text-red-700">by {{ listing.owner.username }} • Rejected</p>
+    </div>
+    <div class="flex items-center space-x-2">
+        <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    </div>
+</div>

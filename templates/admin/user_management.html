@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Management - LandHub Admin{% endblock %}
+{% block meta_description %}Manage users and accounts on LandHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .user-card {
+        transition: all 0.3s ease;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    
+    .role-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .role-admin { @apply bg-purple-100 text-purple-800; }
+    .role-seller { @apply bg-blue-100 text-blue-800; }
+    .role-buyer { @apply bg-green-100 text-green-800; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
+                    <p class="mt-1 text-sm text-gray-600">Manage user accounts and permissions</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'dashboard' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="admin-card rounded-xl shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ total_users }}</div>
+                <div class="text-sm text-gray-600 mt-1">Total Users</div>
+            </div>
+            <div class="admin-card rounded-xl shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-green-600">{{ buyer_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">Buyers</div>
+            </div>
+            <div class="admin-card rounded-xl shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-orange-600">{{ seller_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">Sellers</div>
+            </div>
+            <div class="admin-card rounded-xl shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600">{{ admin_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">Admins</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="admin-card rounded-xl shadow-sm p-6 mb-8">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Filter by Role:</label>
+                    <a href="{% url 'admin_user_management' %}" 
+                       class="px-3 py-1 rounded-full text-sm {% if not role_filter %}bg-primary-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition-colors duration-200">
+                        All Users
+                    </a>
+                    <a href="{% url 'admin_user_management' %}?role=buyer" 
+                       class="px-3 py-1 rounded-full text-sm {% if role_filter == 'buyer' %}bg-primary-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition-colors duration-200">
+                        Buyers
+                    </a>
+                    <a href="{% url 'admin_user_management' %}?role=seller" 
+                       class="px-3 py-1 rounded-full text-sm {% if role_filter == 'seller' %}bg-primary-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition-colors duration-200">
+                        Sellers
+                    </a>
+                    <a href="{% url 'admin_user_management' %}?role=admin" 
+                       class="px-3 py-1 rounded-full text-sm {% if role_filter == 'admin' %}bg-primary-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition-colors duration-200">
+                        Admins
+                    </a>
+                </div>
+                
+                <div class="flex-1 max-w-md">
+                    <form method="get" class="flex">
+                        {% if role_filter %}
+                            <input type="hidden" name="role" value="{{ role_filter }}">
+                        {% endif %}
+                        <input type="text" name="search" value="{{ search_query|default:'' }}" 
+                               placeholder="Search users..." 
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+                        <button type="submit" 
+                                class="px-4 py-2 bg-primary-600 text-white rounded-r-lg hover:bg-primary-700 transition-colors duration-200">
+                            Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        {% if users %}
+            <div class="admin-card rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for user in users %}
+                                <tr class="user-card hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span class="text-white text-sm font-bold">
+                                                    {{ user.first_name|first|default:user.username|first|upper }}{{ user.last_name|first|default:""|upper }}
+                                                </span>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ user.get_full_name|default:user.username }}
+                                                </div>
+                                                <div class="text-sm text-gray-500">@{{ user.username }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="role-badge role-{{ user.profile.role }}">
+                                            {{ user.profile.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ user.email }}</div>
+                                        {% if user.profile.phone %}
+                                            <div class="text-sm text-gray-500">{{ user.profile.phone }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ user.date_joined|date:"M d, Y" }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if user.is_active %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                Inactive
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="text-primary-600 hover:text-primary-900">View</button>
+                                            <button class="text-gray-600 hover:text-gray-900">Edit</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            {% if users.has_other_pages %}
+                <div class="flex justify-center mt-8">
+                    <nav class="flex items-center space-x-2">
+                        {% if users.has_previous %}
+                            <a href="?page={{ users.previous_page_number }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                               class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                                Previous
+                            </a>
+                        {% endif %}
+                        
+                        <span class="px-4 py-2 text-sm text-gray-700">
+                            Page {{ users.number }} of {{ users.paginator.num_pages }}
+                        </span>
+                        
+                        {% if users.has_next %}
+                            <a href="?page={{ users.next_page_number }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                               class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                                Next
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Empty State -->
+            <div class="admin-card rounded-xl shadow-sm p-12 text-center">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No users found</h3>
+                <p class="text-gray-600 mb-6">
+                    {% if search_query or role_filter %}
+                        No users match your current filters. Try adjusting your search criteria.
+                    {% else %}
+                        No users are currently registered in the system.
+                    {% endif %}
+                </p>
+                {% if search_query or role_filter %}
+                    <a href="{% url 'admin_user_management' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200">
+                        Clear Filters
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

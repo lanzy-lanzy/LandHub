@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block title %}{{ action }} Saved Search - LandHub{% endblock %}
+{% block meta_description %}{{ action }} a saved search to get notified about new properties on LandHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .form-section {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ action }} Saved Search</h1>
+                    <p class="mt-1 text-sm text-gray-600">
+                        {% if action == 'Create' %}
+                            Set up alerts to be notified when new properties match your criteria
+                        {% else %}
+                            Update your saved search criteria and alert preferences
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'buyer_saved_searches' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Saved Searches
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Info Alert -->
+        <div class="alert-info rounded-xl p-6 mb-8">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-primary-600 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                    <h3 class="text-sm font-medium text-primary-800 mb-1">How Saved Searches Work</h3>
+                    <p class="text-sm text-primary-700">
+                        When you save a search, we'll automatically check for new properties that match your criteria. 
+                        If you enable email alerts, we'll notify you when new matching properties are listed.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="admin-card rounded-xl shadow-sm p-8 mb-8">
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Search Details</h2>
+                    
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.name.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-gray-500">Give your search a memorable name like "Rural Land in Texas" or "Small Farms Under $100k"</p>
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.search_query.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.search_query.label }}
+                            </label>
+                            {{ form.search_query }}
+                            {% if form.search_query.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.search_query.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.location_filter.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.location_filter.label }}
+                            </label>
+                            {{ form.location_filter }}
+                            {% if form.location_filter.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.location_filter.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.property_type_filter.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.property_type_filter.label }}
+                            </label>
+                            {{ form.property_type_filter }}
+                            {% if form.property_type_filter.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.property_type_filter.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price and Size Filters Section -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Price & Size Filters</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.min_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.min_price.label }}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                {{ form.min_price|add_class:"pl-8" }}
+                            </div>
+                            {% if form.min_price.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.min_price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.max_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.max_price.label }}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                {{ form.max_price|add_class:"pl-8" }}
+                            </div>
+                            {% if form.max_price.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.max_price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.min_size.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.min_size.label }}
+                            </label>
+                            {{ form.min_size }}
+                            {% if form.min_size.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.min_size.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.max_size.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.max_size.label }}
+                            </label>
+                            {{ form.max_size }}
+                            {% if form.max_size.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.max_size.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Settings Section -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Alert Settings</h2>
+                    
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            {{ form.email_alerts }}
+                        </div>
+                        <div class="ml-3">
+                            <label for="{{ form.email_alerts.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                {{ form.email_alerts.label }}
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">
+                                We'll send you an email notification when new properties match your search criteria. 
+                                You can unsubscribe at any time.
+                            </p>
+                            {% if form.email_alerts.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.email_alerts.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-between">
+                <a href="{% url 'buyer_saved_searches' %}" 
+                   class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200">
+                    Cancel
+                </a>
+                
+                <div class="flex items-center space-x-3">
+                    {% if action == 'Edit' %}
+                        <button type="submit" name="save_inactive" 
+                                class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors duration-200">
+                            Save as Inactive
+                        </button>
+                    {% endif %}
+                    <button type="submit" 
+                            class="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200">
+                        {% if action == 'Create' %}Save & Activate Search{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

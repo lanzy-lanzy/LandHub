@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block title %}{{ action }} Listing - LandHub{% endblock %}
+{% block meta_description %}{{ action }} your land listing on LandHub - Add property details, photos, and pricing{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .form-section {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .image-preview {
+        position: relative;
+        display: inline-block;
+        margin: 0.5rem;
+    }
+    
+    .image-preview img {
+        width: 150px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .image-preview.primary img {
+        border-color: #3b82f6;
+    }
+    
+    .delete-image {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    
+    .primary-badge {
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: #3b82f6;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ action }} Listing</h1>
+                    <p class="mt-1 text-sm text-gray-600">
+                        {% if action == 'Create' %}
+                            Create a new property listing to attract potential buyers
+                        {% else %}
+                            Update your property listing details and photos
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'seller_my_listings' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Listings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form method="post" enctype="multipart/form-data" x-data="listingForm()">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="admin-card rounded-xl shadow-sm p-8 mb-8">
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.title.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.description.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.property_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.property_type.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.property_type }}
+                            {% if form.property_type.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.property_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing and Size Section -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Pricing & Size</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.price.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                {{ form.price|add_class:"pl-8" }}
+                            </div>
+                            {% if form.price.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.size_acres.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.size_acres.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.size_acres }}
+                            {% if form.size_acres.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.size_acres.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Section -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Location</h2>
+                    
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="{{ form.location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.location.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.location.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.address.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images Section -->
+            <div class="admin-card rounded-xl shadow-sm p-8 mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Property Images</h2>
+                <p class="text-sm text-gray-600 mb-6">Upload up to 10 high-quality images of your property. The first image or the one marked as primary will be used as the main listing photo.</p>
+                
+                <!-- Existing Images Preview -->
+                {% if listing and listing.images.all %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Current Images</h3>
+                        <div class="flex flex-wrap">
+                            {% for image in listing.images.all %}
+                                <div class="image-preview {% if image.is_primary %}primary{% endif %}">
+                                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:listing.title }}">
+                                    {% if image.is_primary %}
+                                        <div class="primary-badge">PRIMARY</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Image Upload Forms -->
+                {{ image_formset.management_form }}
+                <div id="image-forms">
+                    {% for form in image_formset %}
+                        <div class="image-form-row border border-gray-200 rounded-lg p-4 mb-4">
+                            {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Image File</label>
+                                    {{ form.image }}
+                                    {% if form.image.errors %}
+                                        <div class="mt-1 text-sm text-red-600">{{ form.image.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                    {{ form.alt_text }}
+                                    {% if form.alt_text.errors %}
+                                        <div class="mt-1 text-sm text-red-600">{{ form.alt_text.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <label class="flex items-center">
+                                        {{ form.is_primary }}
+                                        <span class="ml-2 text-sm text-gray-700">Primary Image</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-between">
+                <a href="{% url 'seller_my_listings' %}" 
+                   class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200">
+                    Cancel
+                </a>
+                
+                <div class="flex items-center space-x-3">
+                    <button type="submit" name="save_draft" 
+                            class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors duration-200">
+                        Save as Draft
+                    </button>
+                    <button type="submit" name="save_and_submit" 
+                            class="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200">
+                        {% if action == 'Create' %}Save & Submit for Approval{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function listingForm() {
+    return {
+        // Add any Alpine.js functionality here if needed
+    }
+}
+</script>
+{% endblock %}

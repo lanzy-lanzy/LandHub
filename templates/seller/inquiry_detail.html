@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block title %}Inquiry Details - LandHub{% endblock %}
+{% block meta_description %}View and respond to buyer inquiries about your land listings on LandHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .message-bubble {
+        border-radius: 1rem;
+        padding: 1rem 1.5rem;
+        max-width: 80%;
+        position: relative;
+    }
+    
+    .message-bubble.buyer {
+        background-color: #f3f4f6;
+        border-top-left-radius: 0;
+        margin-right: auto;
+    }
+    
+    .message-bubble.seller {
+        background-color: #dbeafe;
+        border-top-right-radius: 0;
+        margin-left: auto;
+    }
+    
+    .message-time {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+    }
+    
+    .property-card {
+        transition: all 0.3s ease;
+    }
+    
+    .property-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Inquiry Details</h1>
+                    <p class="mt-1 text-sm text-gray-600">View and respond to buyer inquiries</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'seller_inquiries' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Inquiries
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Inquiry and Response Section -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Inquiry Details -->
+                <div class="admin-card rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900">{{ inquiry.subject }}</h2>
+                        <div class="flex items-center space-x-2">
+                            {% if not inquiry.is_read %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    New
+                                </span>
+                            {% endif %}
+                            {% if inquiry.seller_response %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Responded
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Pending Response
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Buyer Message -->
+                        <div class="message-bubble buyer">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-white text-xs font-bold">
+                                        {{ inquiry.buyer.first_name|first|default:inquiry.buyer.username|first|upper }}{{ inquiry.buyer.last_name|first|default:""|upper }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ inquiry.buyer.get_full_name|default:inquiry.buyer.username }}</p>
+                                    <p class="text-xs text-gray-500">Buyer</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">{{ inquiry.message }}</p>
+                            <div class="message-time">{{ inquiry.created_at|date:"M d, Y g:i A" }}</div>
+                        </div>
+                        
+                        <!-- Seller Response (if exists) -->
+                        {% if inquiry.seller_response %}
+                            <div class="message-bubble seller">
+                                <div class="flex items-center justify-end mb-2">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 text-right">{{ request.user.get_full_name|default:request.user.username }}</p>
+                                        <p class="text-xs text-gray-500 text-right">You (Seller)</p>
+                                    </div>
+                                    <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center ml-3">
+                                        <span class="text-white text-xs font-bold">
+                                            {{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|default:""|upper }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">{{ inquiry.seller_response }}</p>
+                                <div class="message-time text-right">{{ inquiry.response_date|date:"M d, Y g:i A" }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Response Form (if not responded yet) -->
+                {% if not inquiry.seller_response %}
+                    <div class="admin-card rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-6">Your Response</h2>
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-6">
+                                {{ form.seller_response }}
+                                {% if form.seller_response.errors %}
+                                    <div class="mt-1 text-sm text-red-600">{{ form.seller_response.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" 
+                                        class="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200">
+                                    Send Response
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Property and Buyer Info Sidebar -->
+            <div class="space-y-8">
+                <!-- Property Card -->
+                <div class="admin-card property-card rounded-xl shadow-sm overflow-hidden">
+                    <div class="h-48 bg-gray-200 relative">
+                        {% if inquiry.land.images.all %}
+                            <img src="{{ inquiry.land.images.first.image.url }}" alt="{{ inquiry.land.title }}"
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                                <svg class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ inquiry.land.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-3">{{ inquiry.land.location }}</p>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-2xl font-bold text-primary-600">${{ inquiry.land.price|floatformat:0 }}</div>
+                            <div class="text-sm text-gray-500">{{ inquiry.land.size_acres }} acres</div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span>{{ inquiry.land.get_property_type_display }}</span>
+                            <span>{{ inquiry.land.get_status_display }}</span>
+                        </div>
+                        
+                        <a href="{% url 'seller_edit_listing' inquiry.land.id %}" 
+                           class="block w-full text-center px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                            View Listing
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Buyer Info Card -->
+                <div class="admin-card rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Buyer Information</h3>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-white text-lg font-bold">
+                                {{ inquiry.buyer.first_name|first|default:inquiry.buyer.username|first|upper }}{{ inquiry.buyer.last_name|first|default:""|upper }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ inquiry.buyer.get_full_name|default:inquiry.buyer.username }}</p>
+                            <p class="text-sm text-gray-500">Member since {{ inquiry.buyer.date_joined|date:"M Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span class="text-gray-700">{{ inquiry.buyer.email }}</span>
+                        </div>
+                        {% if inquiry.buyer.profile.phone %}
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span class="text-gray-700">{{ inquiry.buyer.profile.phone }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
