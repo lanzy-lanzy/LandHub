@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 class UserProfile(models.Model):
@@ -129,6 +132,93 @@ class Favorite(models.Model):
         verbose_name_plural = "Favorites"
         unique_together = ('user', 'land')
         ordering = ['-created_at']
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('inquiry_new', 'New Inquiry'),
+        ('inquiry_response', 'Inquiry Response'),
+        ('listing_approved', 'Listing Approved'),
+        ('listing_rejected', 'Listing Rejected'),
+        ('listing_pending', 'Listing Pending Approval'),
+        ('property_favorited', 'Property Favorited'),
+        ('system_welcome', 'Welcome Message'),
+        ('system_update', 'System Update'),
+        ('admin_message', 'Admin Message'),
+    ]
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True, blank=True)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    # Generic foreign key to link to any model (Land, Inquiry, etc.)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    related_object = GenericForeignKey('content_type', 'object_id')
+
+    # Additional metadata as JSON (stored as text for SQLite compatibility)
+    metadata = models.TextField(default='{}', blank=True)
+
+    def get_metadata(self):
+        """Get metadata as dict"""
+        import json
+        try:
+            return json.loads(self.metadata) if self.metadata else {}
+        except json.JSONDecodeError:
+            return {}
+
+    def set_metadata(self, data):
+        """Set metadata from dict"""
+        import json
+        self.metadata = json.dumps(data) if data else '{}'
+
+    def mark_as_read(self):
+        """Mark notification as read"""
+        if not self.is_read:
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save(update_fields=['is_read', 'read_at'])
+
+    def mark_as_unread(self):
+        """Mark notification as unread"""
+        if self.is_read:
+            self.is_read = False
+            self.read_at = None
+            self.save(update_fields=['is_read', 'read_at'])
+
+    def get_action_url(self):
+        """Get the URL for the action related to this notification"""
+        if self.notification_type in ['inquiry_new', 'inquiry_response'] and self.related_object:
+            if hasattr(self.related_object, 'id'):
+                if self.recipient.profile.role == 'seller':
+                    return f'/seller/inquiries/{self.related_object.id}/'
+                else:
+                    return f'/buyer/inquiries/{self.related_object.id}/'
+        elif self.notification_type in ['listing_approved', 'listing_rejected', 'listing_pending'] and self.related_object:
+            if hasattr(self.related_object, 'id'):
+                return f'/seller/listings/{self.related_object.id}/edit/'
+        elif self.notification_type == 'property_favorited' and self.related_object:
+            if hasattr(self.related_object, 'land'):
+                return f'/buyer/property/{self.related_object.land.id}/'
+        return '/notifications/'
+
+    def __str__(self):
+        return f"{self.title} - {self.recipient.username}"
+
+    class Meta:
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read']),
+            models.Index(fields=['recipient', 'created_at']),
+            models.Index(fields=['notification_type']),
+        ]
 
 
 class SavedSearch(models.Model):

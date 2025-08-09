@@ -12,7 +12,8 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from datetime import datetime, timedelta
 from decimal import Decimal
-from .models import Land, UserProfile, Inquiry, LandImage, Favorite, SavedSearch
+from .models import Land, UserProfile, Inquiry, LandImage, Favorite, SavedSearch, Notification
+from .notifications import notify_new_inquiry, notify_inquiry_response, notify_listing_approved, notify_listing_rejected, notify_listing_pending_approval, notify_property_favorited, notify_welcome_message
 from .forms import (
     LandListingForm, LandImageFormSet, InquiryResponseForm, UserProfileForm, ListingSearchForm,
     PropertySearchForm, SavedSearchForm, BuyerInquiryForm, BuyerProfileForm
@@ -30,6 +31,10 @@ def register(request):
             if role in ['admin', 'seller', 'buyer']:
                 user.profile.role = role
                 user.profile.save()
+
+            # Create welcome notification
+            notify_welcome_message(user)
+
             login(request, user)
             return redirect('dashboard')
     else:
@@ -714,6 +719,9 @@ def admin_api_approve_listing(request, listing_id):
             listing.is_approved = True
             listing.save()
 
+            # Create notification for seller
+            notify_listing_approved(listing)
+
             return render(request, 'components/admin_listing_approved.html', {
                 'listing': listing,
                 'message': 'Listing approved successfully'
@@ -737,6 +745,9 @@ def admin_api_reject_listing(request, listing_id):
             listing.is_approved = False
             listing.admin_notes = 'Rejected by admin'
             listing.save()
+
+            # Create notification for seller
+            notify_listing_rejected(listing, listing.admin_notes)
 
             return render(request, 'components/admin_listing_rejected.html', {
                 'listing': listing,
@@ -944,6 +955,10 @@ def seller_submit_for_approval(request, listing_id):
         if listing.status == 'draft':
             listing.status = 'pending'
             listing.save()
+
+            # Create notification for admins
+            notify_listing_pending_approval(listing)
+
             messages.success(request, f'Listing "{listing.title}" has been submitted for approval.')
         else:
             messages.warning(request, 'This listing has already been submitted.')
@@ -1035,6 +1050,10 @@ def seller_inquiry_detail(request, inquiry_id):
             inquiry = form.save(commit=False)
             inquiry.response_date = timezone.now()
             inquiry.save()
+
+            # Create notification for buyer
+            notify_inquiry_response(inquiry)
+
             messages.success(request, 'Your response has been sent successfully!')
             return redirect('seller_inquiries')
     else:
@@ -1123,6 +1142,10 @@ def seller_api_listing_status(request, listing_id):
             if action == 'submit_for_approval' and listing.status == 'draft':
                 listing.status = 'pending'
                 listing.save()
+
+                # Create notification for admins
+                notify_listing_pending_approval(listing)
+
                 message = 'Listing submitted for approval'
             elif action == 'mark_as_sold' and listing.status == 'approved':
                 listing.status = 'sold'
@@ -1307,6 +1330,10 @@ def buyer_property_detail(request, property_id):
             inquiry.buyer = request.user
             inquiry.land = property_obj
             inquiry.save()
+
+            # Create notification for seller
+            notify_new_inquiry(inquiry)
+
             messages.success(request, 'Your inquiry has been sent to the seller!')
             return redirect('buyer_property_detail', property_id=property_obj.id)
     else:
@@ -1409,6 +1436,9 @@ def buyer_toggle_favorite(request, property_id):
                 # Added to favorites
                 is_favorited = True
                 message = 'Added to favorites'
+
+                # Create notification for seller (optional)
+                notify_property_favorited(favorite)
 
             return render(request, 'components/favorite_button.html', {
                 'property': property_obj,
@@ -1702,6 +1732,10 @@ def buyer_send_inquiry(request, property_id):
             inquiry.buyer = request.user
             inquiry.land = property_obj
             inquiry.save()
+
+            # Create notification for seller
+            notify_new_inquiry(inquiry)
+
             messages.success(request, 'Your inquiry has been sent to the seller!')
             return redirect('buyer_inquiries')
     else:
@@ -1791,3 +1825,135 @@ def buyer_api_dashboard_stats(request):
         'avg_favorite_price': avg_favorite_price,
     }
     return render(request, 'components/buyer_dashboard_stats.html', context)
+
+
+# ============================================================================
+# NOTIFICATION MANAGEMENT VIEWS
+# ============================================================================
+
+@login_required
+def notifications_list(request):
+    """View for displaying all notifications for a user"""
+    # Get filter parameters
+    notification_type = request.GET.get('type', '')
+    is_read = request.GET.get('read', '')
+
+    # Base queryset
+    notifications = Notification.objects.filter(
+        recipient=request.user
+    ).select_related('sender', 'content_type').order_by('-created_at')
+
+    # Apply filters
+    if notification_type:
+        notifications = notifications.filter(notification_type=notification_type)
+
+    if is_read == 'true':
+        notifications = notifications.filter(is_read=True)
+    elif is_read == 'false':
+        notifications = notifications.filter(is_read=False)
+
+    # Pagination
+    paginator = Paginator(notifications, 20)  # Show 20 notifications per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Get notification type choices for filter dropdown
+    notification_types = Notification.NOTIFICATION_TYPES
+
+    context = {
+        'notifications': page_obj,
+        'notification_types': notification_types,
+        'current_type': notification_type,
+        'current_read': is_read,
+        'total_notifications': notifications.count(),
+        'unread_count': notifications.filter(is_read=False).count(),
+    }
+
+    # Return HTMX partial if requested
+    if request.headers.get('HX-Request'):
+        return render(request, 'components/notifications_list.html', context)
+
+    return render(request, 'notifications/list.html', context)
+
+
+@login_required
+def notification_mark_read(request, notification_id):
+    """Mark a notification as read via HTMX"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.mark_as_read()
+
+    # Return updated notification item
+    context = {'notification': notification}
+    return render(request, 'components/notification_item.html', context)
+
+
+@login_required
+def notification_mark_unread(request, notification_id):
+    """Mark a notification as unread via HTMX"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.mark_as_unread()
+
+    # Return updated notification item
+    context = {'notification': notification}
+    return render(request, 'components/notification_item.html', context)
+
+
+@login_required
+def notification_delete(request, notification_id):
+    """Delete a notification via HTMX"""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.delete()
+
+    # Return empty response to remove the item from DOM
+    return JsonResponse({'success': True})
+
+
+@login_required
+def notifications_mark_all_read(request):
+    """Mark all notifications as read for the current user"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    # Mark all unread notifications as read
+    updated_count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).update(is_read=True, read_at=timezone.now())
+
+    if request.headers.get('HX-Request'):
+        # Return updated notification count for HTMX
+        return JsonResponse({
+            'success': True,
+            'updated_count': updated_count,
+            'unread_count': 0
+        })
+
+    messages.success(request, f'Marked {updated_count} notifications as read.')
+    return redirect('notifications_list')
+
+
+@login_required
+def notifications_dropdown(request):
+    """HTMX endpoint for notification dropdown content"""
+    recent_notifications = Notification.objects.filter(
+        recipient=request.user
+    ).select_related('sender', 'content_type').order_by('-created_at')[:5]
+
+    context = {
+        'recent_notifications': recent_notifications,
+        'unread_count': Notification.objects.filter(
+            recipient=request.user,
+            is_read=False
+        ).count()
+    }
+
+    return render(request, 'components/notifications_dropdown.html', context)
