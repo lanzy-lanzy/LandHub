@@ -191,7 +191,7 @@ def admin_dashboard(request):
 
 
 # ============================================================================
-# ADMIN MANAGEMENT VIEWS
+# ADMIN USER MANAGEMENT VIEWS
 # ============================================================================
 
 @login_required
@@ -241,6 +241,95 @@ def admin_user_management(request):
     }
     return render(request, 'admin/user_management.html', context)
 
+
+@login_required
+def admin_user_detail(request, user_id):
+    """Admin view for viewing user details"""
+    # Role-based access control
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
+        return redirect('landing')
+
+    user = get_object_or_404(User.objects.select_related('profile'), id=user_id)
+
+    # Get user statistics
+    total_listings = user.land_listings.count()
+    total_inquiries_sent = user.inquiries_sent.count()
+    total_inquiries_received = Inquiry.objects.filter(land__owner=user).count()
+    total_favorites = user.favorites.count()
+    total_saved_searches = user.saved_searches.count()
+
+    context = {
+        'user': user,
+        'total_listings': total_listings,
+        'total_inquiries_sent': total_inquiries_sent,
+        'total_inquiries_received': total_inquiries_received,
+        'total_favorites': total_favorites,
+        'total_saved_searches': total_saved_searches,
+    }
+    return render(request, 'admin/user_detail.html', context)
+
+
+@login_required
+def admin_user_edit(request, user_id):
+    """Admin view for editing user details"""
+    # Role-based access control
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
+        return redirect('landing')
+
+    user = get_object_or_404(User.objects.select_related('profile'), id=user_id)
+
+    if request.method == 'POST':
+        # Update user fields
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        user.username = request.POST.get('username', user.username)
+        user.is_active = request.POST.get('is_active') == 'on'
+        user.save()
+
+        # Update profile fields
+        user.profile.role = request.POST.get('role', user.profile.role)
+        user.profile.phone = request.POST.get('phone', user.profile.phone)
+        user.profile.bio = request.POST.get('bio', user.profile.bio)
+        user.profile.save()
+
+        messages.success(request, f'User "{user.username}" has been updated successfully.')
+        return redirect('admin_user_detail', user_id=user.id)
+
+    context = {
+        'user': user,
+    }
+    return render(request, 'admin/user_edit.html', context)
+
+
+@login_required
+def admin_user_deactivate(request, user_id):
+    """Admin view for deactivating/activating users"""
+    # Role-based access control
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
+        return redirect('landing')
+
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        # Toggle user active status
+        user.is_active = not user.is_active
+        user.save()
+        
+        status = "activated" if user.is_active else "deactivated"
+        messages.success(request, f'User "{user.username}" has been {status}.')
+        return redirect('admin_user_management')
+
+    context = {
+        'user': user,
+        'action': 'deactivate' if user.is_active else 'activate'
+    }
+    return render(request, 'admin/user_deactivate.html', context)
+
+
+# ============================================================================
+# ADMIN MANAGEMENT VIEWS
+# ============================================================================
 
 @login_required
 def admin_listing_management(request):

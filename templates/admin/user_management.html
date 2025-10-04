@@ -181,8 +181,11 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center space-x-2">
-                                            <button class="text-primary-600 hover:text-primary-900">View</button>
-                                            <button class="text-gray-600 hover:text-gray-900">Edit</button>
+                                            <a href="{% url 'admin_user_detail' user.id %}" class="text-primary-600 hover:text-primary-900">View</a>
+                                            <a href="{% url 'admin_user_edit' user.id %}" class="text-gray-600 hover:text-gray-900">Edit</a>
+                                            <a href="{% url 'admin_user_deactivate' user.id %}" class="{% if user.is_active %}text-red-600 hover:text-red-900{% else %}text-green-600 hover:text-green-900{% endif %}">
+                                                {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

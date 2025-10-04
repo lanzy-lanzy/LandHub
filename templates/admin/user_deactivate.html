@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if action == 'deactivate' %}Deactivate{% else %}Activate{% endif %} User - {{ user.username }} - LandHub Admin{% endblock %}
+{% block meta_description %}{% if action == 'deactivate' %}Deactivate{% else %}Activate{% endif %} user {{ user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .role-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .role-admin { @apply bg-purple-100 text-purple-800; }
+    .role-seller { @apply bg-blue-100 text-blue-800; }
+    .role-buyer { @apply bg-green-100 text-green-800; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{% if action == 'deactivate' %}Deactivate{% else %}Activate{% endif %} User</h1>
+                    <p class="mt-1 text-sm text-gray-600">{% if action == 'deactivate' %}Deactivate{% else %}Activate{% endif %} account for {{ user.get_full_name|default:user.username }}</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'admin_user_detail' user.id %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="admin-card rounded-xl shadow-sm p-8">
+            <div class="text-center">
+                {% if action == 'deactivate' %}
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
+                        <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </div>
+                    <h3 class="mt-4 text-2xl font-bold text-gray-900">Deactivate User Account</h3>
+                    <p class="mt-2 text-gray-600">
+                        You are about to deactivate the account for <strong>{{ user.get_full_name|default:user.username }}</strong>. 
+                        This user will no longer be able to log in or access their account.
+                    </p>
+                {% else %}
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
+                        <svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="mt-4 text-2xl font-bold text-gray-900">Activate User Account</h3>
+                    <p class="mt-2 text-gray-600">
+                        You are about to activate the account for <strong>{{ user.get_full_name|default:user.username }}</strong>. 
+                        This user will be able to log in and access their account again.
+                    </p>
+                {% endif %}
+                
+                <div class="mt-6 bg-gray-50 rounded-lg p-4 text-left">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-sm font-bold">
+                                {{ user.first_name|first|default:user.username|first|upper }}{{ user.last_name|first|default:""|upper }}
+                            </span>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ user.get_full_name|default:user.username }}
+                            </div>
+                            <div class="text-sm text-gray-500">@{{ user.username }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <span class="role-badge role-{{ user.profile.role }}">
+                            {{ user.profile.get_role_display }}
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Member since {{ user.date_joined|date:"M d, Y" }}
+                        </span>
+                        {% if not user.is_active %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Currently Inactive
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post" class="mt-8">
+                    {% csrf_token %}
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <a href="{% url 'admin_user_detail' user.id %}" 
+                           class="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200">
+                            Cancel
+                        </a>
+                        
+                        <button type="submit" 
+                                class="w-full sm:w-auto px-6 py-3 {% if action == 'deactivate' %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white rounded-lg font-medium transition-colors duration-200">
+                            {% if action == 'deactivate' %}Deactivate Account{% else %}Activate Account{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

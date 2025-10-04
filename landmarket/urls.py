@@ -19,6 +19,9 @@ urlpatterns = [
 
     # Admin management (using /manage/ to avoid conflict with Django admin)
     path('manage/users/', views.admin_user_management, name='admin_user_management'),
+    path('manage/users/<int:user_id>/', views.admin_user_detail, name='admin_user_detail'),
+    path('manage/users/<int:user_id>/edit/', views.admin_user_edit, name='admin_user_edit'),
+    path('manage/users/<int:user_id>/deactivate/', views.admin_user_deactivate, name='admin_user_deactivate'),
     path('manage/listings/', views.admin_listing_management, name='admin_listing_management'),
     path('manage/listings/<int:listing_id>/', views.admin_listing_detail, name='admin_listing_detail'),
     path('manage/analytics/', views.admin_analytics, name='admin_analytics'),
