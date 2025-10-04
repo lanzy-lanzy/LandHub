@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import UserProfile, Land, LandImage, Inquiry, Favorite
+from .models import UserProfile, Land, LandImage, Inquiry, Favorite, Notification
 
 
 class UserProfileInline(admin.StackedInline):
@@ -99,3 +99,36 @@ class FavoriteAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
     search_fields = ('user__username', 'land__title')
     readonly_fields = ('created_at',)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'recipient', 'sender', 'notification_type', 'is_read', 'created_at')
+    list_filter = ('notification_type', 'is_read', 'created_at')
+    search_fields = ('title', 'message', 'recipient__username', 'sender__username')
+    readonly_fields = ('created_at', 'read_at')
+    list_editable = ('is_read',)
+
+    fieldsets = (
+        ('Notification Details', {
+            'fields': ('recipient', 'sender', 'notification_type', 'title', 'message')
+        }),
+        ('Status', {
+            'fields': ('is_read', 'read_at')
+        }),
+        ('Related Object', {
+            'fields': ('content_type', 'object_id'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('metadata',),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('recipient', 'sender', 'content_type')

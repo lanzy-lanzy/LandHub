@@ -77,6 +77,14 @@ urlpatterns = [
     path('buyer/api/toggle-search-status/<int:search_id>/', views.buyer_toggle_search_status, name='buyer_toggle_search_status'),
     path('buyer/api/dashboard-stats/', views.buyer_api_dashboard_stats, name='buyer_api_dashboard_stats'),
 
+    # Notification management
+    path('notifications/', views.notifications_list, name='notifications_list'),
+    path('notifications/dropdown/', views.notifications_dropdown, name='notifications_dropdown'),
+    path('notifications/<int:notification_id>/read/', views.notification_mark_read, name='notification_mark_read'),
+    path('notifications/<int:notification_id>/unread/', views.notification_mark_unread, name='notification_mark_unread'),
+    path('notifications/<int:notification_id>/delete/', views.notification_delete, name='notification_delete'),
+    path('notifications/mark-all-read/', views.notifications_mark_all_read, name='notifications_mark_all_read'),
+
     # Test page for modal functionality
     path('test-modal/', views.test_modal, name='test_modal'),
 ]

@@ -128,10 +128,30 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="h-96 bg-gray-200 flex items-center justify-center">
-                            <svg class="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                        <!-- High-quality placeholder image based on property type -->
+                        <div class="h-96 bg-gray-200 overflow-hidden">
+                            {% if property.property_type == 'residential' %}
+                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                                     alt="Beautiful residential land plot with rolling hills and trees"
+                                     class="w-full h-full object-cover">
+                            {% elif property.property_type == 'commercial' %}
+                                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                                     alt="Prime commercial development land in urban area"
+                                     class="w-full h-full object-cover">
+                            {% elif property.property_type == 'agricultural' %}
+                                <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                                     alt="Fertile agricultural farmland with open fields"
+                                     class="w-full h-full object-cover">
+                            {% elif property.property_type == 'recreational' %}
+                                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                                     alt="Scenic recreational land with forest and natural beauty"
+                                     class="w-full h-full object-cover">
+                            {% else %}
+                                <!-- Generic land image for unknown property types -->
+                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                                     alt="Beautiful open land with natural landscape"
+                                     class="w-full h-full object-cover">
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
@@ -284,11 +304,29 @@
                                             <img src="{{ related.images.first.image.url }}" alt="{{ related.title }}" 
                                                  class="w-full h-full object-cover">
                                         {% else %}
-                                            <div class="w-full h-full flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
+                                            <!-- High-quality placeholder image based on property type -->
+                                            {% if related.property_type == 'residential' %}
+                                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
+                                                     alt="Beautiful residential land plot with rolling hills and trees"
+                                                     class="w-full h-full object-cover">
+                                            {% elif related.property_type == 'commercial' %}
+                                                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
+                                                     alt="Prime commercial development land in urban area"
+                                                     class="w-full h-full object-cover">
+                                            {% elif related.property_type == 'agricultural' %}
+                                                <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
+                                                     alt="Fertile agricultural farmland with open fields"
+                                                     class="w-full h-full object-cover">
+                                            {% elif related.property_type == 'recreational' %}
+                                                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
+                                                     alt="Scenic recreational land with forest and natural beauty"
+                                                     class="w-full h-full object-cover">
+                                            {% else %}
+                                                <!-- Generic land image for unknown property types -->
+                                                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
+                                                     alt="Beautiful open land with natural landscape"
+                                                     class="w-full h-full object-cover">
+                                            {% endif %}
                                         {% endif %}
                                     </div>
                                     <div class="flex-1 min-w-0">

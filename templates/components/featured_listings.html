@@ -11,12 +11,29 @@
                              class="w-full h-full object-cover">
                     {% endwith %}
                 {% else %}
-                    <!-- Placeholder image -->
-                    <div class="w-full h-full flex items-center justify-center bg-gray-300">
-                        <svg class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
+                    <!-- High-quality placeholder image based on property type -->
+                    {% if listing.property_type == 'residential' %}
+                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                             alt="Beautiful residential land plot with rolling hills and trees"
+                             class="w-full h-full object-cover">
+                    {% elif listing.property_type == 'commercial' %}
+                        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                             alt="Prime commercial development land in urban area"
+                             class="w-full h-full object-cover">
+                    {% elif listing.property_type == 'agricultural' %}
+                        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                             alt="Fertile agricultural farmland with open fields"
+                             class="w-full h-full object-cover">
+                    {% elif listing.property_type == 'recreational' %}
+                        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                             alt="Scenic recreational land with forest and natural beauty"
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <!-- Generic land image for unknown property types -->
+                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                             alt="Beautiful open land with natural landscape"
+                             class="w-full h-full object-cover">
+                    {% endif %}
                 {% endif %}
                 
                 <!-- Property Type Badge -->
@@ -129,18 +146,137 @@
             </div>
         </div>
     {% empty %}
-        <!-- No listings available -->
-        <div class="col-span-full text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No featured listings</h3>
-            <p class="mt-1 text-sm text-gray-500">Check back soon for new property listings.</p>
-            <div class="mt-4">
-                <a href="{% url 'buyer_browse_listings' %}"
-                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
-                    Browse All Properties
-                </a>
+        <!-- Sample featured listings when no real data exists -->
+
+        <!-- Sample Listing 1: Residential -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div class="relative h-48 bg-gray-200">
+                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                     alt="Beautiful residential land plot with rolling hills and trees"
+                     class="w-full h-full object-cover">
+                <div class="absolute top-3 left-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Residential
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Prime Residential Land - 5.2 Acres</h3>
+                <p class="text-gray-600 text-sm mb-3">Beautiful rolling hills with mature trees, perfect for building your dream home. Utilities available at road.</p>
+                <div class="flex items-center text-sm text-gray-500 mb-3">
+                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Austin, TX
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 8v8a2 2 0 002 2h8a2 2 0 002-2V8M4 8h16M8 2v4m8-4v4" />
+                        </svg>
+                        5.2 acres
+                    </div>
+                    <div class="text-lg font-bold text-primary-600">$125,000</div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="showAuthModal()" class="flex-1 bg-primary-600 text-white text-center py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors duration-200">
+                        View Details
+                    </button>
+                    <button onclick="showAuthModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Listing 2: Agricultural -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div class="relative h-48 bg-gray-200">
+                <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                     alt="Fertile agricultural farmland with open fields"
+                     class="w-full h-full object-cover">
+                <div class="absolute top-3 left-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Agricultural
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Premium Farmland - 50 Acres</h3>
+                <p class="text-gray-600 text-sm mb-3">Excellent farmland with rich soil, perfect for crop production. Includes irrigation system and barn.</p>
+                <div class="flex items-center text-sm text-gray-500 mb-3">
+                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Arlington, TX
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 8v8a2 2 0 002 2h8a2 2 0 002-2V8M4 8h16M8 2v4m8-4v4" />
+                        </svg>
+                        50.0 acres
+                    </div>
+                    <div class="text-lg font-bold text-primary-600">$425,000</div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="showAuthModal()" class="flex-1 bg-primary-600 text-white text-center py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors duration-200">
+                        View Details
+                    </button>
+                    <button onclick="showAuthModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Listing 3: Commercial -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div class="relative h-48 bg-gray-200">
+                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                     alt="Prime commercial development land in urban area"
+                     class="w-full h-full object-cover">
+                <div class="absolute top-3 left-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        Commercial
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Commercial Development Plot - 2.8 Acres</h3>
+                <p class="text-gray-600 text-sm mb-3">Prime location for commercial development. Located in a prime area with great potential for development.</p>
+                <div class="flex items-center text-sm text-gray-500 mb-3">
+                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    San Antonio, TX
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 8v8a2 2 0 002 2h8a2 2 0 002-2V8M4 8h16M8 2v4m8-4v4" />
+                        </svg>
+                        2.8 acres
+                    </div>
+                    <div class="text-lg font-bold text-primary-600">$185,000</div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="showAuthModal()" class="flex-1 bg-primary-600 text-white text-center py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors duration-200">
+                        View Details
+                    </button>
+                    <button onclick="showAuthModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     {% endfor %}
