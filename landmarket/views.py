@@ -811,7 +811,13 @@ def seller_create_listing(request):
                 # Save the listing
                 listing = form.save(commit=False)
                 listing.owner = request.user
-                listing.status = 'draft'  # Start as draft
+                
+                # Check which button was clicked
+                if 'save_and_submit' in request.POST:
+                    listing.status = 'pending'  # Submit for approval
+                else:
+                    listing.status = 'draft'  # Save as draft
+                    
                 listing.save()
 
                 # Save images
@@ -830,7 +836,11 @@ def seller_create_listing(request):
                     images[0].is_primary = True
                     images[0].save()
 
-                messages.success(request, 'Listing created successfully! You can now submit it for approval.')
+                # Provide appropriate success message
+                if listing.status == 'pending':
+                    messages.success(request, 'Listing created and submitted for approval!')
+                else:
+                    messages.success(request, 'Listing created successfully! You can now submit it for approval.')
                 return redirect('seller_edit_listing', listing_id=listing.id)
     else:
         form = LandListingForm()
@@ -870,11 +880,29 @@ def seller_edit_listing(request, listing_id):
                 # Save the listing
                 listing = form.save(commit=False)
 
-                # If significant changes and listing was approved, require re-approval
-                if significant_changes and original_listing.status == 'approved':
-                    listing.status = 'pending'
-                    listing.is_approved = False
-                    messages.info(request, 'Your listing has been updated and will require admin re-approval due to significant changes.')
+                # Determine the status based on button clicked and current status
+                if 'save_and_submit' in request.POST:
+                    # If submitting for approval
+                    if listing.status == 'draft':
+                        listing.status = 'pending'
+                        messages.success(request, 'Listing submitted for approval!')
+                    elif significant_changes and original_listing.status == 'approved':
+                        listing.status = 'pending'
+                        listing.is_approved = False
+                        messages.info(request, 'Your listing has been updated and will require admin re-approval due to significant changes.')
+                    else:
+                        messages.success(request, 'Listing updated successfully!')
+                elif 'save_draft' in request.POST:
+                    # Explicitly saving as draft
+                    listing.status = 'draft'
+                    messages.success(request, 'Listing saved as draft!')
+                else:
+                    # Regular save without status change
+                    # If significant changes and listing was approved, require re-approval
+                    if significant_changes and original_listing.status == 'approved':
+                        listing.status = 'pending'
+                        listing.is_approved = False
+                        messages.info(request, 'Your listing has been updated and will require admin re-approval due to significant changes.')
 
                 listing.save()
 
